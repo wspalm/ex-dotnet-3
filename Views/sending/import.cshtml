@@ -1,0 +1,192 @@
+<nav aria-label='breadcrumb'>
+    <ol class='breadcrumb breadcrumb-arrow'>
+        <li class='breadcrumb-item active' aria-current='page'>Import Reject-ATS file and send message</li>
+
+    </ol>
+</nav>
+<div id='app1' v-cloak>
+
+    <v-app>
+        <v-main>
+            <v-file-input label="Click the paper clip to select the file" v-model="file1">
+            </v-file-input>
+            <v-btn color="blue darken-1" class="white--text" @@click="upload">
+                import reject ATS
+                <v-icon>mdi-import</v-icon>
+            </v-btn><br><br>
+
+            <!--do not forget to chagne this section-->
+            This is the current database<br><br>
+            <v-data-table :headers='headers' :items='records' class='elevation-1' />
+            </v-data-table>
+            <br><br><br>
+            Message Format<br><br>
+            <v-data-table :headers='headers2' :items='records' class='elevation-1'>
+            </v-data-table><br>
+
+            <v-btn color="green darken-1" class="white--text" @@click="send_message">
+                send message
+                <v-icon color="white">
+                    mdi-message-text
+                </v-icon>
+            </v-btn>
+
+
+        </v-main>
+    </v-app>
+</div>
+@section scripts{
+<script>
+    var app;
+    var component = {
+        vuetify: new Vuetify(),
+        el: '#app1',
+        data: {
+            records: [],
+            file1: null,
+            parameter: {},
+            headers: [{
+                        text: 'Client Ref no',
+                        value: 'clientRef',
+                        align: 'center',
+                    },
+                    {
+                        text: 'Reference Code',
+                        value: 'refer',
+                        align: 'center',
+                    },
+                    {
+                        text: 'Sending Bank',
+                        value: 'sBank',
+                        align: 'center',
+                    },
+                    {
+                        text: 'Sending Bank no',
+                        value: 'sBankNo',
+                        align: 'center'
+                    },
+                    {
+                        text: 'Receiving Bank',
+                        value: 'rBank',
+                        align: 'center'
+                    },
+                    {
+                        text: 'Receiving Bank No',
+                        value: 'rBankNo',
+                        align: 'center'
+                    },
+                    {
+                        text: 'Amount',
+                        value: 'num',
+                        align: 'center'
+                    },
+                    {
+                        text: 'Status Code',
+                        value: 'statCode',
+                        align: 'center'
+                    },
+                    {
+                        text: 'Status Description',
+                        value: 'stat',
+                        align: 'center'
+                    },
+
+                ] //end of headers array
+                ,
+            headers2: [{
+                        text: 'Client Ref no',
+                        value: 'clientRef',
+                        align: 'center',
+                    },
+                    {
+                        text: 'Sending Bank',
+                        value: 'sBank',
+                        align: 'center',
+                    },
+                    {
+                        text: 'Status Description',
+                        value: 'stat',
+                        align: 'center'
+                    },
+                    {
+                        text: 'Amount',
+                        value: 'num',
+                        align: 'center'
+                    },
+                    {
+                        text: 'MKT telephone',
+                        value: 'tel',
+                        align: 'center'
+                    },
+                ] //end of headers2 array
+                ,
+        } //end of data
+        ,
+        created() {
+            this.records = @Html.Raw(Json.Serialize(@ViewBag.records));
+        },
+        methods: {
+            upload() {
+                //to get the attach file in the v-input-file
+                //and then make a request to the server
+                var data = new FormData(); //this datatype is to submit the file to server
+                //append is the function that take (<xx>,<NameFromVuejsData>)
+                // xx = the name that will be encrypted and send it to server
+                //it must match because it will be extracted later on in the server
+                data.append("file1", this.file1);
+                console.log(data);
+                //make ajax
+                var option = {
+                    type: "POST",
+                    enctype: 'multipart/form-data',
+                    url: "/sending/import", // controller/functionname
+                    data: data, //data this one comes fromt the data section of vuejs
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    timeout: 30000,
+                    success: (res) => {
+                        console.log(res);
+                        window.location = '/sending/index';
+                        window.alert("Import Complete");
+                        location.reload();
+                    },
+                    error: (error) => {
+                        console.log(error);
+                        window.alert("Import Fail, please re-import the correct file");
+                    },
+                }; //end of option object
+                //each of this attribute of this object is the parameter
+                //that will identify how this request in going to look like
+                //then we throw this object into the ajax() function
+                $.ajax(option);
+            } //end of upload function
+            ,
+            send_message() {
+                if(confirm("Do you want to send the message ??")){
+                var url = '/sending/send_message';
+                
+                $.post(url)
+                    .done(res => {
+                        if (res.error == 200) {
+                            console.log(res);
+                            alert("Message Sent");
+                            //window.location = '/sending/index'
+
+                        } else {
+                            alert("error");
+                        }
+                    });
+                }//end of if
+            } //end of send message function
+            ,
+        } //end of method
+        ,
+        computed: {
+
+        }
+    };
+    app = new Vue(component);
+</script>
+
+}
